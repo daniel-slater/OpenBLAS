@@ -8,6 +8,16 @@ FCOMMON_OPT += -mfpu=vfpv3 -march=armv7-a
 endif
 endif
 
+ifeq ($(CORE), IMX6Q)
+CCOMMON_OPT += -mcpu=cortex-a9 -mfloat-abi=hard
+FCOMMON_OPT += -mcpu=cortex-a9 -mfloat-abi=hard
+endif
+
+ifeq ($(CORE), IMX6ULL)
+CCOMMON_OPT += -mcpu=cortex-a7 -mfloat-abi=hard
+FCOMMON_OPT += -mcpu=cortex-a7 -mfloat-abi=hard
+endif
+
 ifeq ($(CORE), ARMV6)
 CCOMMON_OPT += -mfpu=vfp
 FCOMMON_OPT += -mfpu=vfp
@@ -16,4 +26,8 @@ endif
 ifdef HAVE_NEON
 CCOMMON_OPT += -mfpu=neon
 FCOMMON_OPT += -mfpu=neon
+ifeq ($(CORE), $(filter $(CORE),IMX6Q IMX6ULL))
+CCOMMON_OPT += -mvectorize-with-neon-quad
+FCOMMON_OPT += -mvectorize-with-neon-quad
+endif
 endif

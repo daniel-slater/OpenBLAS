@@ -914,6 +914,46 @@ if (DEFINED CORE AND CMAKE_CROSSCOMPILING AND NOT (${HOST_OS} STREQUAL "WINDOWSS
     set(CGEMM_UNROLL_N 2)
     set(ZGEMM_UNROLL_M 2)
     set(ZGEMM_UNROLL_N 2)
+  elseif ("${TCORE}" STREQUAL "IMX6Q")
+    file(APPEND ${TARGET_CONF_TEMP}
+      "#define L1_DATA_SIZE\t32768\n"
+      "#define L1_DATA_LINESIZE\t32\n"
+      "#define L2_SIZE\t1048576\n"
+      "#define L2_LINESIZE\t32\n"
+      "#define DTB_DEFAULT_ENTRIES\t128\n"
+      "#define DTB_SIZE\t4096\n"
+      "#define L2_ASSOCIATIVE\t16\n"
+      "#define HAVE_VFPV3\n"
+      "#define HAVE_VFP\n"
+      "#define HAVE_NEON\n")
+    set(SGEMM_UNROLL_M 4)
+    set(SGEMM_UNROLL_N 4)
+    set(DGEMM_UNROLL_M 4)
+    set(DGEMM_UNROLL_N 4)
+    set(CGEMM_UNROLL_M 2)
+    set(CGEMM_UNROLL_N 2)
+    set(ZGEMM_UNROLL_M 2)
+    set(ZGEMM_UNROLL_N 2)
+  elseif ("${TCORE}" STREQUAL "IMX6ULL")
+    file(APPEND ${TARGET_CONF_TEMP}
+      "#define L1_DATA_SIZE\t32768\n"
+      "#define L1_DATA_LINESIZE\t64\n"
+      "#define L2_SIZE\t131072\n"
+      "#define L2_LINESIZE\t64\n"
+      "#define DTB_DEFAULT_ENTRIES\t256\n"
+      "#define DTB_SIZE\t4096\n"
+      "#define L2_ASSOCIATIVE\t8\n"
+      "#define HAVE_VFPV3\n"
+      "#define HAVE_VFP\n"
+      "#define HAVE_NEON\n")
+    set(SGEMM_UNROLL_M 4)
+    set(SGEMM_UNROLL_N 4)
+    set(DGEMM_UNROLL_M 4)
+    set(DGEMM_UNROLL_N 4)
+    set(CGEMM_UNROLL_M 2)
+    set(CGEMM_UNROLL_N 2)
+    set(ZGEMM_UNROLL_M 2)
+    set(ZGEMM_UNROLL_N 2)    
   elseif ("${TCORE}" STREQUAL "ARMV8")
     file(APPEND ${TARGET_CONF_TEMP}
       "#define L1_DATA_SIZE\t32768\n"

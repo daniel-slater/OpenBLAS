@@ -31,14 +31,18 @@
 #define CPU_ARMV6       	1
 #define CPU_ARMV7       	2
 #define CPU_CORTEXA9       	3
-#define CPU_CORTEXA15       	4
+#define CPU_CORTEXA15       4
+#define CPU_IMX6Q			5
+#define CPU_IMX6ULL			6
 
 static char *cpuname[] = {
   "UNKNOWN",
   "ARMV6",
   "ARMV7",
   "CORTEXA9",
-  "CORTEXA15"
+  "CORTEXA15",
+  "IMX6Q",
+  "IMX6ULL"
 };
 
 
@@ -47,7 +51,9 @@ static char *cpuname_lower[] = {
   "armv6",
   "armv7",
   "cortexa9",
-  "cortexa15"
+  "cortexa15",
+  "imx6q",
+  "imx6ull"
 };
 
 
@@ -86,32 +92,63 @@ int get_feature(char *search)
 	return(0);
 }
 
-
-int detect(void)
+char *cpu_info(const char *search, char *buffer, int size)
 {
-
 #ifdef __linux
-
 	FILE *infile;
-  	char buffer[512], *p;
+  	char *p;
   	p = (char *) NULL ;
 
   	infile = fopen("/proc/cpuinfo", "r");
 	while (fgets(buffer, sizeof(buffer), infile))
 	{
 
-		if (!strncmp("CPU part", buffer, 8))
+		if (!strncmp(search, buffer, size))
 		{
 			p = strchr(buffer, ':') + 2;
 			break;
-      		}
+      	}
   	}
 
   	fclose(infile);
+	return p;
+#else
+	return NULL;
+#endif
+}
+
+
+int detect(void)
+{
+
+#ifdef __linux
+
+	char buffer[512], *p;
+
+	p = cpu_info("CPU part", buffer, 8);
+
   	if(p != NULL) {
 	  if (strstr(p, "0xc09")) {
+
+		p = cpu_info("Hardware", buffer, 8);
+		if(p != NULL) {
+			if (strstr(p, "i.MX6Q") || strstr(p, "i.MX6 Quad")) {
+				return CPU_IMX6Q;
+			}
+		}
+
 	    return CPU_CORTEXA9;
 	  }
+
+	  if (strstr(p, "0xc07")) {
+		p = cpu_info("Hardware", buffer, 8);
+		if(p != NULL) {
+			if (strstr(p, "i.MX6UL") || strstr(p, "i.MX6ULL") || strstr(p, "i.MX6 Ultralite")) {
+				return CPU_IMX6ULL;
+			}
+		}
+	  }
+
 	  if (strstr(p, "0xc0f")) {
 	    return CPU_CORTEXA15;
 	  }
@@ -121,20 +158,10 @@ int detect(void)
 
 	}
 
-  	p = (char *) NULL ;
-  	infile = fopen("/proc/cpuinfo", "r");
-
-	while (fgets(buffer, sizeof(buffer), infile))
-	{
-
-		if ((!strncmp("model name", buffer, 10)) || (!strncmp("Processor", buffer, 9)))
-		{
-			p = strchr(buffer, ':') + 2;
-			break;
-      		}
-  	}
-
-  	fclose(infile);
+	p = cpu_info("model name", buffer, 10);
+	if( p == NULL ) {
+		p = cpu_info("Processor", buffer, 9);
+	}
 
   	if(p != NULL)
 	{
@@ -162,20 +189,9 @@ int detect(void)
 
 	}
 
-  	p = (char *) NULL ;
-  	infile = fopen("/proc/cpuinfo", "r");
+	p = cpu_info("CPU architecture", buffer, 16);
 
-	while (fgets(buffer, sizeof(buffer), infile))
-	{
-
-		if ((!strncmp("CPU architecture", buffer, 16)))
-		{
-			p = strchr(buffer, ':') + 2;
-			break;
-      		}
-  	}
-  	fclose(infile);
-  	if(p != NULL) {
+	if(p != NULL) {
 	  if (strstr(p, "8")) {
 	    return CPU_ARMV7;  //ARMV8 on 32-bit
 	  }
@@ -228,6 +244,38 @@ void get_cpuconfig(void)
     			printf("#define DTB_DEFAULT_ENTRIES 128\n");
     			printf("#define DTB_SIZE 4096\n");
     			printf("#define L2_ASSOCIATIVE 4\n");
+			break;
+
+	       case CPU_IMX6Q:
+    			printf("#define IMX6Q\n");
+		  		printf("#define CORTEXA9\n");
+    			printf("#define ARMV7\n");
+    			printf("#define HAVE_VFP\n");
+    			printf("#define HAVE_VFPV3\n");
+			if ( get_feature("neon"))	printf("#define HAVE_NEON\n");
+    			printf("#define L1_DATA_SIZE 32768\n");
+    			printf("#define L1_DATA_LINESIZE 32\n");
+    			printf("#define L2_SIZE 1048576\n");
+    			printf("#define L2_LINESIZE 32\n");
+    			printf("#define DTB_DEFAULT_ENTRIES 128\n");
+    			printf("#define DTB_SIZE 4096\n");
+    			printf("#define L2_ASSOCIATIVE 16\n");
+			break;
+
+	       case CPU_IMX6ULL:
+    			printf("#define IMX6ULL\n");
+		  		printf("#define CORTEXA7\n");
+    			printf("#define ARMV7\n");
+    			printf("#define HAVE_VFP\n");
+    			printf("#define HAVE_VFPV3\n");
+			if ( get_feature("neon"))	printf("#define HAVE_NEON\n");
+    			printf("#define L1_DATA_SIZE 32768\n");
+    			printf("#define L1_DATA_LINESIZE 64\n");
+    			printf("#define L2_SIZE 131072\n");
+    			printf("#define L2_LINESIZE 64\n");
+    			printf("#define DTB_DEFAULT_ENTRIES 256\n");
+    			printf("#define DTB_SIZE 4096\n");
+    			printf("#define L2_ASSOCIATIVE 8\n");
 			break;
 
 	       case CPU_CORTEXA15:
