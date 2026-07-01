@@ -1230,6 +1230,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
        "-DHAVE_VFPV3 -DHAVE_VFP -DHAVE_NEON"
 #define LIBNAME   "imx6q"
 #define CORENAME  "IMX6Q"
+#define FORCE_NUM_CORES 4
 #else
 #endif
 
@@ -1245,6 +1246,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
        "-DHAVE_VFPV3 -DHAVE_VFP -DHAVE_NEON"
 #define LIBNAME   "imx6q"
 #define CORENAME  "IMX6Q"
+#define FORCE_NUM_CORES 1
 #else
 #endif
 
@@ -2007,6 +2009,10 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 static int get_num_cores(void) {
 
+#if defined(FORCE_NUM_CORES) && FORCE_NUM_CORES > 0
+       return FORCE_NUM_CORES;
+#else
+
   int count;
 #ifdef OS_WINDOWS
   SYSTEM_INFO sysinfo;
@@ -2044,6 +2050,7 @@ static int get_num_cores(void) {
 
 #else
   return 2;
+#endif
 #endif
 }
 
